@@ -1,0 +1,25 @@
+{
+    "name": "justijndepover/bullhorn-api",
+    "description": "PHP client for the Bullhorn API",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Justijn Depover",
+            "email": "justijndepover@gmail.com"
+        }
+    ],
+    "keywords": [
+        "php",
+        "bullhorn",
+        "api"
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^7.4"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.22",
+        "justijndepover/php-check": "^0.12.0"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
