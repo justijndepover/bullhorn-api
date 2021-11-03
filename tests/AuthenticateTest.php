@@ -116,4 +116,14 @@ class AuthenticateTest extends TestCase
         $this->bullhorn->setTokenExpiresAt(time() + (60 * 60));
         $this->assertFalse($this->bullhorn->shouldRefreshToken());
     }
+
+    /** @test */
+    public function it_can_set_a_token_update_callback()
+    {
+        $this->bullhorn->setTokenUpdateCallback(function (Bullhorn $bullhorn) {
+            //
+        });
+
+        $this->assertTrue(true);
+    }
 }

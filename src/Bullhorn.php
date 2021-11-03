@@ -27,6 +27,16 @@ class Bullhorn
     private $clientSecret;
 
     /**
+     * @var Client|null
+     */
+    private $client;
+
+    /**
+     * @var callable(Connection)
+     */
+    private $tokenUpdateCallback;
+
+    /**
      * @var string
      */
     private $redirectUri;
@@ -183,6 +193,11 @@ class Bullhorn
         }
     }
 
+    public function setTokenUpdateCallback(callable $callback): void
+    {
+        $this->tokenUpdateCallback = $callback;
+    }
+
     private function tokenHasExpired(): bool
     {
         if (empty($this->tokenExpiresAt)) {
@@ -225,6 +240,10 @@ class Bullhorn
             $this->accessToken = $body['access_token'];
             $this->refreshToken = $body['refresh_token'];
             $this->tokenExpiresAt = time() + $body['expires_in'];
+
+            if (is_callable($this->tokenUpdateCallback)) {
+                call_user_func($this->tokenUpdateCallback, $this);
+            }
         } catch (ClientException $e) {
             $response = json_decode($e->getResponse()->getBody()->getContents());
 
