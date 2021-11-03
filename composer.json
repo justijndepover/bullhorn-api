@@ -20,6 +20,16 @@
         "orchestra/testbench": "^6.22",
         "justijndepover/php-check": "^0.12.0"
     },
+    "autoload": {
+        "psr-4": {
+            "Justijndepover\\Bullhorn\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Justijndepover\\Bullhorn\\Tests\\": "tests/"
+        }
+    },
     "minimum-stability": "dev",
     "prefer-stable": true
 }
