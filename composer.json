@@ -18,7 +18,8 @@
     },
     "require-dev": {
         "orchestra/testbench": "^6.22",
-        "justijndepover/php-check": "^0.12.0"
+        "justijndepover/php-check": "^0.12.0",
+        "phpunit/phpunit": "^9.5"
     },
     "autoload": {
         "psr-4": {
@@ -29,6 +30,9 @@
         "psr-4": {
             "Justijndepover\\Bullhorn\\Tests\\": "tests/"
         }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
     },
     "minimum-stability": "dev",
     "prefer-stable": true
