@@ -6,8 +6,8 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Message;
-use Justijndepover\Teamleader\Exceptions\ApiException;
-use Justijndepover\Teamleader\Exceptions\CouldNotAquireAccessTokenException;
+use Justijndepover\Bullhorn\Exceptions\ApiException;
+use Justijndepover\Bullhorn\Exceptions\CouldNotAquireAccessTokenException;
 
 class Bullhorn
 {
@@ -247,7 +247,7 @@ class Bullhorn
         } catch (ClientException $e) {
             $response = json_decode($e->getResponse()->getBody()->getContents());
 
-            throw CouldNotAquireAccessTokenException::make($response->errors[0]->status, $response->errors[0]->title);
+            throw CouldNotAquireAccessTokenException::make($e->getCode(), $response->error . ' - ' . $response->error_description);
         } catch (Exception $e) {
             throw ApiException::make($e->getCode(), $e->getMessage());
         }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Justijndepover\Teamleader\Exceptions;
+namespace Justijndepover\Bullhorn\Exceptions;
 
 use Exception;
 
