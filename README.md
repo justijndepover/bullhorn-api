@@ -22,7 +22,33 @@ composer require justijndepover/bullhorn-api
 
 Connecting to Bullhorn:
 ```php
-// Todo
+// note the state param: this can be a random string. It's used as an extra layer of protection. Bullhorn will return this value when connecting.
+$bullhorn = new Bullhorn(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, STATE);
+
+// if you already possess authentication credentials, provide them:
+$bullhorn->setAccessToken($accessToken);
+$bullhorn->setRefreshToken($refreshToken);
+$bullhorn->setTokenExpiresAt($expiresAt);
+$bullhorn->setRestUrl($restUrl);
+$bullhorn->setBHRestToken($BHRestToken);
+
+// when one of the tokens (accesstoken, refreshtoken, BHRestToken) changes, a callback method is called. Giving you the opportunity to store them.
+$bullhorn->setTokenUpdateCallback(function ($bullhorn) {
+    // you should store away these tokens
+    $bullhorn->getAccessToken();
+    $bullhorn->getRefreshToken();
+    $bullhorn->getTokenExpiresAt();
+    $bullhorn->getRestUrl();
+    $bullhorn->getBHRestToken();
+});
+
+// open the connection
+$bullhorn->connect();
+```
+
+Your application is now connected. To start fetching data:
+```php
+$bullhorn->get('entity/Candidate/5059165');
 ```
 
 ## Security
