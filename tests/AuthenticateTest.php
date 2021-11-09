@@ -87,6 +87,20 @@ class AuthenticateTest extends TestCase
     }
 
     /** @test */
+    public function it_can_get_and_set_bh_rest_token()
+    {
+        $this->bullhorn->setBHRestToken('bh_rest_token');
+        $this->assertEquals($this->bullhorn->getBHRestToken(), 'bh_rest_token');
+    }
+
+    /** @test */
+    public function it_can_get_and_set_rest_url()
+    {
+        $this->bullhorn->setRestUrl('rest_url');
+        $this->assertEquals($this->bullhorn->getRestUrl(), 'rest_url');
+    }
+
+    /** @test */
     public function it_knows_when_to_authorize()
     {
         $this->bullhorn->setAuthorizationCode(null);

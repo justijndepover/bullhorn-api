@@ -14,7 +14,17 @@ class Bullhorn
     /**
      * @var string
      */
-    private $baseUrl = 'https://auth.bullhornstaffing.com';
+    private $authUrl = 'https://auth.bullhornstaffing.com';
+
+    /**
+     * @var string
+     */
+    private $loginUrl = 'https://rest.bullhornstaffing.com';
+
+    /**
+     * @var string
+     */
+    private $restUrl;
 
     /**
      * @var string
@@ -66,6 +76,11 @@ class Bullhorn
      */
     private $tokenExpiresAt;
 
+    /**
+     * @var string
+     */
+    private $BHRestToken;
+
     public function __construct(string $clientId, string $clientSecret, string $redirectUri, string $state)
     {
         $this->clientId = $clientId;
@@ -84,7 +99,7 @@ class Bullhorn
 
     public function redirectForAuthorizationUrl(): string
     {
-        return $this->baseUrl . '/oauth/authorize'
+        return $this->authUrl . '/oauth/authorize'
             . '?client_id=' . $this->clientId
             . '&response_type=code'
             . '&redirect_uri=' . $this->redirectUri
@@ -171,14 +186,47 @@ class Bullhorn
         $this->tokenExpiresAt = $tokenExpiresAt;
     }
 
+    public function getBHRestToken(): ?string
+    {
+        return $this->BHRestToken;
+    }
+
+    public function setBHRestToken(?string $BHRestToken): void
+    {
+        $this->BHRestToken = $BHRestToken;
+    }
+
+    public function getRestUrl(): ?string
+    {
+        return $this->restUrl;
+    }
+
+    public function setRestUrl(?string $restUrl): void
+    {
+        $this->restUrl = $restUrl;
+    }
+
     public function shouldAuthorize(): bool
     {
+        if (! $this->shouldObtainBHRestToken()) {
+            return false;
+        }
+
         return empty($this->authorizationCode) && empty($this->refreshToken);
     }
 
     public function shouldRefreshToken(): bool
     {
+        if (! $this->shouldObtainBHRestToken()) {
+            return false;
+        }
+
         return empty($this->accessToken) || $this->tokenHasExpired();
+    }
+
+    public function shouldObtainBHRestToken(): bool
+    {
+        return empty($this->BHRestToken) || empty($this->restUrl);
     }
 
     public function connect(): void
@@ -190,6 +238,10 @@ class Bullhorn
 
         if ($this->shouldRefreshToken()) {
             $this->acquireAccessToken();
+        }
+
+        if ($this->shouldObtainBHRestToken()) {
+            $this->acquireBHRestToken();
         }
     }
 
@@ -232,7 +284,7 @@ class Bullhorn
                 ];
             }
 
-            $response = $this->client->post($this->baseUrl . '/oauth/token', $data);
+            $response = $this->client->post($this->authUrl . '/oauth/token', $data);
 
             Message::rewindBody($response);
             $body = json_decode($response->getBody()->getContents(), true);
@@ -240,6 +292,36 @@ class Bullhorn
             $this->accessToken = $body['access_token'];
             $this->refreshToken = $body['refresh_token'];
             $this->tokenExpiresAt = time() + $body['expires_in'];
+
+            if (is_callable($this->tokenUpdateCallback)) {
+                call_user_func($this->tokenUpdateCallback, $this);
+            }
+        } catch (ClientException $e) {
+            $response = json_decode($e->getResponse()->getBody()->getContents());
+
+            throw CouldNotAquireAccessTokenException::make($e->getCode(), $response->error . ' - ' . $response->error_description);
+        } catch (Exception $e) {
+            throw ApiException::make($e->getCode(), $e->getMessage());
+        }
+    }
+
+    public function acquireBHRestToken(): void
+    {
+        try {
+            $data = [
+                'form_params' => [
+                    'version' => '*',
+                    'access_token' => $this->accessToken,
+                ],
+            ];
+
+            $response = $this->client->post($this->loginUrl . '/rest-services/login', $data);
+
+            Message::rewindBody($response);
+            $body = json_decode($response->getBody()->getContents(), true);
+
+            $this->BHRestToken = $body['BhRestToken'];
+            $this->restUrl = $body['restUrl'];
 
             if (is_callable($this->tokenUpdateCallback)) {
                 call_user_func($this->tokenUpdateCallback, $this);
