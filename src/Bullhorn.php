@@ -217,10 +217,6 @@ class Bullhorn
 
     public function shouldRefreshToken(): bool
     {
-        if (! $this->shouldObtainBHRestToken()) {
-            return false;
-        }
-
         return empty($this->accessToken) || $this->tokenHasExpired();
     }
 
