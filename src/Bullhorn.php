@@ -6,6 +6,8 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Message;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use Justijndepover\Bullhorn\Exceptions\ApiException;
 use Justijndepover\Bullhorn\Exceptions\CouldNotAquireAccessTokenException;
 
@@ -329,5 +331,84 @@ class Bullhorn
         } catch (Exception $e) {
             throw ApiException::make($e->getCode(), $e->getMessage());
         }
+    }
+
+    public function get(string $endpoint, array $parameters = [])
+    {
+        try {
+            $request = $this->createRequest('GET', $endpoint, null, $parameters);
+            $response = $this->client->send($request);
+
+            return $this->parseResponse($response);
+        } catch (ClientException $e) {
+            $this->parseExceptionForErrorMessages($e);
+        } catch (Exception $e) {
+            throw ApiException::make($e->getCode(), $e->getMessage());
+        }
+    }
+
+    public function post(string $endpoint, array $body, array $parameters = [])
+    {
+        $body = json_encode($body);
+
+        try {
+            $request = $this->createRequest('POST', $endpoint, $body, $parameters);
+            $response = $this->client->send($request);
+
+            return $this->parseResponse($response);
+        } catch (ClientException $e) {
+            $this->parseExceptionForErrorMessages($e);
+        } catch (Exception $e) {
+            throw ApiException::make($e->getCode(), $e->getMessage());
+        }
+    }
+
+    private function createRequest($method, $endpoint, $body = null, array $parameters = [], array $headers = [])
+    {
+        $endpoint = $this->buildUrl($endpoint);
+
+        $headers = array_merge($headers, [
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+            'BHRestToken' => $this->BHRestToken,
+        ]);
+
+        // Create param string
+        if (! empty($parameters)) {
+            $endpoint .= '?' . http_build_query($parameters);
+        }
+
+        // Create the request
+        $request = new Request($method, $endpoint, $headers, $body);
+
+        return $request;
+    }
+
+    private function buildUrl(string $endpoint): string
+    {
+        return $this->getRestUrl() . ltrim($endpoint, '/');
+    }
+
+    private function parseResponse(Response $response)
+    {
+        try {
+            if ($response->getStatusCode() === 204) {
+                return [];
+            }
+
+            Message::rewindBody($response);
+            $json = json_decode($response->getBody()->getContents(), true);
+
+            return $json;
+        } catch (\RuntimeException $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function parseExceptionForErrorMessages(ClientException $e): void
+    {
+        $response = json_decode($e->getResponse()->getBody()->getContents());
+
+        throw ApiException::make($e->getCode(), $response->errorMessage);
     }
 }
