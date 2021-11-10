@@ -10,6 +10,8 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Justijndepover\Bullhorn\Exceptions\ApiException;
 use Justijndepover\Bullhorn\Exceptions\CouldNotAquireAccessTokenException;
+use Justijndepover\Bullhorn\Exceptions\CouldNotAquireBhRestTokenException;
+use Justijndepover\Bullhorn\Exceptions\UnauthorizedException;
 
 class Bullhorn
 {
@@ -327,7 +329,7 @@ class Bullhorn
         } catch (ClientException $e) {
             $response = json_decode($e->getResponse()->getBody()->getContents());
 
-            throw CouldNotAquireAccessTokenException::make($e->getCode(), $response->error . ' - ' . $response->error_description);
+            throw CouldNotAquireBhRestTokenException::make($e->getCode(), $response->error . ' - ' . $response->error_description);
         } catch (Exception $e) {
             throw ApiException::make($e->getCode(), $e->getMessage());
         }
@@ -408,6 +410,10 @@ class Bullhorn
     private function parseExceptionForErrorMessages(ClientException $e): void
     {
         $response = json_decode($e->getResponse()->getBody()->getContents());
+
+        if ($response->errorCode == 401) {
+            throw UnauthorizedException::make($response->errorCode, $response->errorMessage);
+        }
 
         throw ApiException::make($e->getCode(), $response->errorMessage);
     }
