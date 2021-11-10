@@ -224,7 +224,7 @@ class Bullhorn
 
     public function shouldObtainBHRestToken(): bool
     {
-        return empty($this->BHRestToken) || empty($this->restUrl);
+        return !empty($this->accessToken) && (empty($this->BHRestToken) || empty($this->restUrl));
     }
 
     public function connect(): void
