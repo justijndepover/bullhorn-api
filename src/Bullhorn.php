@@ -382,6 +382,22 @@ class Bullhorn
         }
     }
 
+    public function put(string $endpoint, array $body, array $parameters = [])
+    {
+        $body = json_encode($body);
+
+        try {
+            $request = $this->createRequest('PUT', $endpoint, $body, $parameters);
+            $response = $this->client->send($request);
+
+            return $this->parseResponse($response);
+        } catch (ClientException $e) {
+            $this->parseExceptionForErrorMessages($e);
+        } catch (Exception $e) {
+            throw ApiException::make($e->getCode(), $e->getMessage());
+        }
+    }
+
     private function createRequest($method, $endpoint, $body = null, array $parameters = [], array $headers = [])
     {
         $endpoint = $this->buildUrl($endpoint);
