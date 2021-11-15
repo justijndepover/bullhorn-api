@@ -229,6 +229,23 @@ class Bullhorn
         return !empty($this->accessToken) && (empty($this->BHRestToken) || empty($this->restUrl));
     }
 
+    public function isConnected()
+    {
+        if (! empty($this->accessToken)) {
+            return true;
+        }
+
+        if (! empty($this->refreshToken)) {
+            return true;
+        }
+
+        if (! empty($this->BHRestToken)) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function connect(): void
     {
         if ($this->shouldAuthorize()) {
