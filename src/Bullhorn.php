@@ -398,6 +398,20 @@ class Bullhorn
         }
     }
 
+    public function delete(string $endpoint)
+    {
+        try {
+            $request = $this->createRequest('DELETE', $endpoint, null, []);
+            $response = $this->client->send($request);
+
+            return $this->parseResponse($response);
+        } catch (ClientException $e) {
+            $this->parseExceptionForErrorMessages($e);
+        } catch (Exception $e) {
+            throw ApiException::make($e->getCode(), $e->getMessage());
+        }
+    }
+
     private function createRequest($method, $endpoint, $body = null, array $parameters = [], array $headers = [])
     {
         $endpoint = $this->buildUrl($endpoint);
